@@ -80,6 +80,27 @@ std::pair<un, un> minElem(int **A, un n, un m)
     return index;
 }
 
+void fillSnake(int **A, un n, un m)
+{
+    // for (un i = 0; i < n;)
+    un i = 0;
+    un j = 0;
+    un num = 0;
+
+    for (un s = 0; s < n + m; s++)
+    {
+        i = s;
+        j = 0;
+        while (i < n && i >= 0 && j >= 0 && j < m)
+        {
+            A[i][j] = num;
+            num++;
+            i--;
+            j++;
+        }
+    }
+}
+
 int main(int argc, char *argv[])
 {
     const un n = 4;
@@ -87,11 +108,14 @@ int main(int argc, char *argv[])
 
     int **A = createMatrix(n, m);
 
-    fillRandom(A, n, m);
+    fillSnake(A, n, m);
     printMatrix(A, n, m);
-    auto min = minElem(A, n, m);
-    auto max = maxElem(A, n, m);
-    std::cout << min.first << " " << min.second << "\n";
-    std::cout << max.first << " " << max.second << "\n";
+
+    // auto min = minElem(A, n, m);
+    // auto max = maxElem(A, n, m);
+    //
+    // std::cout << min.first << " " << min.second << "\n";
+    // std::cout << max.first << " " << max.second << "\n";
+
     return 0;
 }
