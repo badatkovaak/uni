@@ -17,7 +17,7 @@ template <size_t N> int product(std::array<int, N> *arr)
     {
         if (2 * i < N)
             // if (arr[i] != 0)
-            res *= arr[2 * i];
+            res *= arr->at(2 * i);
     }
     return res;
 }
@@ -29,7 +29,7 @@ template <size_t N> int sum_between_zeros(std::array<int, N> *arr)
 
     for (int i = 0; i < N; i++)
     {
-        if (arr[i] == 0)
+        if (arr->at(i) == 0)
         {
             first = i;
             break;
@@ -38,7 +38,7 @@ template <size_t N> int sum_between_zeros(std::array<int, N> *arr)
 
     for (int i = N - 1; i >= 0; i--)
     {
-        if (arr[i] == 0)
+        if (arr->at(i) == 0)
         {
             last = i;
             break;
@@ -47,7 +47,7 @@ template <size_t N> int sum_between_zeros(std::array<int, N> *arr)
 
     for (int i = first; i < last; i++)
     {
-        res += arr[i];
+        res += arr->at(i);
     }
     return res;
 }
@@ -81,11 +81,10 @@ int main(int argc, char *argv[])
     // }
 
     print_array(&b);
-    std::cout << product(a, LEN) << "\n";
+    std::cout << product(&b) << "\n";
     std::cout << sum_between_zeros(&b) << "\n";
     rearrange(&b);
     // print_array(&c);
     print_array(&b);
     return 0;
 }
-
