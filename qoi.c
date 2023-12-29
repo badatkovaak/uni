@@ -1,10 +1,18 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+
+#define cond_diff(p, c) (c.a == p.a) && c.r - p.r + 2 <= 3 && c.g - p.g + 2 <= 3 && c.b - p.b + 2 <= 3
+
+#define cond_luma(p, c)                                                                                                \
+    (c.a == p.a) && (c.g - p.g + 32) <= 63 && (c.r - p.r - c.g + p.g + 8) <= 15 && (c.b - p.b - c.g + p.g + 8) <= 15
+
+#define cond_eq(p, c) (p.r == c.r) && (p.g == c.g) && (p.b == c.b) && (p.a == c.a)
 
 typedef unsigned char unchar;
-
-typedef unsigned long un;
+typedef uint64_t un;
 
 typedef struct
 {
@@ -14,12 +22,68 @@ typedef struct
 
 typedef struct
 {
-    char magic[4];      // magic bytes "qoif"
-    uint32_t width;     // image width in pixels (BE)
-    uint32_t height;    // image height in pixels (BE)
-    uint8_t channels;   // 3 = RGB, 4 = RGBA
-    uint8_t colorspace; // 0 = sRGB with linear alpha, 1 = all channels linear
-} qoi_header;
+    void *data;
+    un len;
+} data_w_len;
+
+typedef struct
+{
+    uint32_t width;
+    uint32_t height;
+    unchar channels;
+    unchar colorspace;
+} qoi_desc;
+
+typedef struct
+{
+    unchar r;
+    unchar g;
+    unchar b;
+} pixel_rgb;
+
+typedef struct
+{
+    unchar r;
+    unchar g;
+    unchar b;
+    unchar a;
+} pixel;
+
+uint32_t switch_endianness(uint32_t value)
+{
+    return ((value >> 24) & 0xFF) | ((value >> 8) & 0xFF00) | ((value << 8) & 0xFF0000) | ((value << 24) & 0xFF000000);
+}
+
+pixel generate_pixel_rgba()
+{
+    pixel res = {
+        rand() % 16 + 120,
+        rand() % 16 + 120,
+        rand() % 16 + 120,
+        // rand() % 32 + 112,
+        255,
+    };
+    return res;
+}
+
+pixel *generate_data_rgba(uint32_t width, uint32_t height)
+{
+    un size = width * height;
+    pixel *data = (pixel *)malloc(size * 4);
+    for (un i = 0; i < size; i++)
+    {
+        data[i] = generate_pixel_rgba();
+    }
+    return data;
+}
+
+void print_image(const pixel *d, un size)
+{
+    for (un i = 0; i < size; i++)
+    {
+        printf("r: %u, g: %u, b: %u, a: %u\n", d[i].r, d[i].g, d[i].b, d[i].a);
+    }
+}
 
 char *read_file(const char *path)
 {
@@ -75,36 +139,130 @@ void print_unchar(unchar *d, size_t len)
 {
     for (un i = 0; i < len; i++)
     {
-        printf("%i ", d[i]);
+        printf("%x ", d[i]);
     }
     printf("\n");
 }
 
-// unchar *qoi_encode(unchar *data) {}
-
-// unchar* qoi_decode() {}
-
-// unchar* qoi_read() {}
-
-// unchar* qoi_write() {}
-
-int main(int argc, char *argv[])
+data_w_len qoi_encode(const void *image, const qoi_desc *desc)
 {
-    char *a = read_file("data.txt");
-    if (a == 0)
+    pixel *data = (pixel *)image;
+    // pixel *running = (pixel *)malloc(64 * 4);
+
+    pixel prev = {0, 0, 0, 255};
+    pixel curr = {0, 0, 0, 255};
+    un curr_index = 0;
+    un img_size = desc->height * desc->width;
+    bool cond1, cond2, cond3;
+    unchar *output = (unchar *)malloc(img_size * 5);
+    un out_len = 0;
+
+    while (curr_index < img_size)
     {
-        printf("Null Pointer!\n");
-        return 1;
+        prev = curr;
+        curr = data[curr_index];
+
+        cond1 = cond_eq(prev, curr);
+        cond2 = cond_diff(prev, curr);
+        cond3 = cond_luma(prev, curr);
+
+        if (cond1)
+        {
+            un run_len = 1;
+            pixel prev1 = curr;
+            pixel curr1 = data[curr_index + run_len];
+
+            while (cond_eq(prev1, curr1) && run_len < 63)
+            {
+                run_len += 1;
+                prev1 = curr1;
+                curr1 = data[curr_index + run_len];
+            }
+            output[out_len] = 0xc0 + run_len - 1;
+            out_len++;
+            curr_index += run_len - 1;
+        }
+        else if (cond2)
+        {
+            output[out_len] = 0x40 + (curr.r - prev.r + 2) * 16 + (curr.g - prev.g + 2) * 4 + curr.b - prev.b + 2;
+            out_len++;
+        }
+        else if (cond3)
+        {
+            char dg = curr.g - prev.g;
+            char dr_dg = curr.r - prev.r - dg;
+            char db_dg = curr.b - prev.b - dg;
+            output[out_len] = 0x80 + dg + 32;
+            output[out_len + 1] = (dr_dg + 8) * 16 + db_dg + 8;
+            out_len += 2;
+        }
+        else if (curr.a == prev.a)
+        {
+            output[out_len] = 0xfe;
+            output[out_len + 1] = curr.r;
+            output[out_len + 2] = curr.g;
+            output[out_len + 3] = curr.b;
+            out_len += 4;
+        }
+        else
+        {
+            output[out_len] = 0xff;
+            output[out_len + 1] = curr.r;
+            output[out_len + 2] = curr.g;
+            output[out_len + 3] = curr.b;
+            output[out_len + 4] = curr.a;
+            out_len += 5;
+        }
+        curr_index++;
     }
 
-    vec b = read_file_bin("data.txt");
-    if (b.data == 0)
+    data_w_len res = {(void *)output, out_len};
+    return res;
+}
+
+// data_w_len qoi_encode_lazy(const void *image, const qoi_desc *desc)
+// {
+//     pixel *data = (pixel *)image;
+//     un img_size = desc->width * desc->height;
+//     unchar *output = (unchar *)malloc(img_size * 5);
+//     un out_len = 0;
+// }
+
+un write_qoi(const char *path, const void *data, const qoi_desc *desc, un out_len)
+{
+    FILE *f = fopen(path, "wb");
+    if (f == NULL)
     {
-        printf("Null Pointer!\n");
-        return 1;
+        printf("Error!\n");
+        return 0;
     }
 
-    print_unchar(b.data, b.len);
-    printf("%s\n", a);
+    const char *magic = "qoif";
+    un mg = fwrite(magic, 1, 4, f);
+    un header = fwrite(desc, 1, 10, f);
+    un res = fwrite(data, 1, out_len, f);
+    uint64_t one = 1UL << (8 * 7);
+    un on = fwrite(&one, 1, 8, f);
+    return mg + header + res + on;
+}
+
+int main()
+{
+    // srand(time(0));
+
+    // vec d = read_file_bin("assets/testcard_rgba.qoi");
+    vec d = read_file_bin("assets/img.qoi");
+    print_unchar(d.data, d.len);
+
+    // const uint32_t width = 4;
+    // const uint32_t height = 4;
+    // const pixel *image = generate_data_rgba(width, height);
+    // print_image(image, height * width);
+    // const qoi_desc desc = {width, height, 4, 0};
+    // const data_w_len d = qoi_encode(image, &desc);
+    // const qoi_desc desc1 = {switch_endianness(width), switch_endianness(height), 4, 1};
+    // un r = write_qoi("assets/img.qoi", d.data, &desc1, d.len);
+    // printf("%lu\n", r);
+
     return 0;
 }
