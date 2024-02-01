@@ -1,0 +1,6 @@
+#!/bin/sh
+
+FLAGS="-Wall -Wextra -Wpedantic -Wshadow -g"
+
+ clang $FLAGS -o ./target/$1 $1.c &&
+./target/$1

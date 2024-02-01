@@ -1,3 +1,9 @@
-with open("data.txt", mode="r", encoding="ASCII") as f:
-    s = f.read()
-    print(s)
+#!/bin/python
+
+# with open("/dev/stdin", mode="r", encoding="ASCII") as f:
+#     s = f.read()
+#     print(s)
+import os
+
+os.system('/bin/sh -c "ls"')
+# a = input()
