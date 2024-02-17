@@ -18,27 +18,38 @@ int main(void) {
         *b = i;
         a[i] = b;
     }
-    list* l = create(a[0]);
-    printf("l : %lu %lu %lu\n", (un)l, (un)l->data, (un)l->next);
+    list* l = create_node(a[0]);
+    // printf("l : %lu %lu %lu\n", (un)l, (un)l->data, (un)l->next);
 
     for (un i = 1; i < array_len; i++) {
         push(l, a[i]);
     }
 
     // list* l = create_from_array((void**)a, array_len);
-    printf("l : %lu %lu %lu\n", (un)l, (un)l->data, (un)l->next);
-    push(l, a[0]);
+    // printf("l : %lu %lu %lu\n", (un)l, (un)l->data, (un)l->next);
+    // push(l, a[0]);
+
+    insert(l, 1, a[4]);
     map(l, &print_un);
+    printf("\n");
+
+    insert(l, 0, a[5]);
+    map(l, &print_un);
+    printf("\n");
+
+    insert(l, 12, a[1]);
+    map(l, &print_un);
+    printf("\n");
+
     list* node = l;
     printf("\n\n");
     while (node) {
         printf("%lu %lu %lu \n", *(un*)(node->data), (un)node->next, (un)node);
         node = node->next;
     }
-    for (un i = 0; i < 11; i++) {
-        un* res = (un*)pop(l);
-        printf("poped : %lu , %lu\n", (un)res, (un)l);
-    }
+
+    delete_list(l);
+
     for (un i = 0; i < array_len; i++) {
         free(a[i]);
     }

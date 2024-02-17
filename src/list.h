@@ -1,5 +1,5 @@
 // Linked List
-// typedef struct list list;
+
 typedef struct list {
     void* data;
     struct list* next;
@@ -7,46 +7,36 @@ typedef struct list {
 
 void push(list* first, void* data);
 
+void insert(list* first, unsigned index, void* data);
+
 void insert_front(list* first, void* data);
 
 void* pop(list* first);
 
 void* remove_front(list* first);
 
-list* create(void* data);
+list* create_node(void* data);
 
 list* create_from_array(void** array, unsigned array_len);
 
 void map(list* first, void (*func)(void*));
 
-int delete_list(list* first);
+void delete_list(list* first);
 
 #ifdef LIST_IMPLEMENTATION
 
-// #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-typedef unsigned long un;
-
-list* create(void* data) {
-    list* node = (list*)malloc(sizeof(list));
-    node->data = data;
-    node->next = NULL;
-    return node;
-}
+// typedef unsigned long un;
 
 void push(list* first, void* data) {
-    printf("push : %lu %lu\n", first, data);
     list* temp = first;
 
     while (temp->next) {
-        printf("it : %lu\n", (un)temp);
         temp = temp->next;
     }
-
-    printf("done! %lu\n", (un)temp);
 
     list* node = (list*)malloc(sizeof(list));
     if (temp) {
@@ -54,6 +44,35 @@ void push(list* first, void* data) {
     }
     node->data = data;
     node->next = NULL;
+}
+
+void insert(list* first, unsigned index, void* data) {
+    list* prev = NULL;
+    list* curr = first;
+    unsigned count = 0;
+
+    while (curr && count < index) {
+        prev = curr;
+        curr = curr->next;
+        count += 1;
+    }
+
+    if (count != index) {
+        printf("Incorrect index\n");
+        return;
+    }
+
+    list* node = (list*)malloc(sizeof(list));
+    if (prev) {
+        node->data = data;
+        node->next = curr;
+        prev->next = node;
+    } else {
+        node->data = first->data;
+        node->next = first->next;
+        first->data = data;
+        first->next = node;
+    }
 }
 
 void insert_front(list* first, void* data) {
@@ -66,6 +85,13 @@ void insert_front(list* first, void* data) {
     first->next = new_node;
 }
 
+list* create_node(void* data) {
+    list* node = (list*)malloc(sizeof(list));
+    node->data = data;
+    node->next = NULL;
+    return node;
+}
+
 list* create_from_array(void** array, unsigned array_len) {
     list* curr_node;
     list* prev_node = NULL;
@@ -75,8 +101,6 @@ list* create_from_array(void** array, unsigned array_len) {
         curr_node->data = array[i - 1];
         curr_node->next = prev_node;
         prev_node = curr_node;
-        printf("%d : %lu %lu %lu\n", i - 1, (un)(prev_node->data),
-               (un)(prev_node->next), (un)prev_node);
     }
 
     return curr_node;
@@ -85,8 +109,10 @@ list* create_from_array(void** array, unsigned array_len) {
 void* remove_front(list* first) {
     void* res = first->data;
     list* temp = first->next;
+
     first->data = temp->data;
     first->next = temp->next;
+
     free(temp);
     return res;
 }
@@ -99,15 +125,12 @@ void* pop(list* first) {
     }
 
     void* res = NULL;
-    printf("pop - %lu %lu\n", (un)node, (un)node->next);
     if (node->next) {
         res = (node->next)->data;
         free(node->next);
         node->next = NULL;
     } else {
         res = node->data;
-        free(node);
-        // first = NULL;
     }
     return res;
 }
@@ -119,6 +142,18 @@ void map(list* first, void (*func)(void*)) {
         func(node->data);
         node = node->next;
     }
+}
+
+void delete_list(list* first) {
+    list* prev = first;
+    list* curr = first->next;
+
+    while (curr) {
+        free(prev);
+        prev = curr;
+        curr = curr->next;
+    }
+    free(prev);
 }
 
 #endif  // LIST_IMPLEMENTATION
