@@ -1,6 +1,6 @@
 #!/bin/sh
 
-FLAGS="-Wall -Wextra -Wpedantic -Wshadow -g -std=c99"
+FLAGS="-Wall -Wextra -Wpedantic -Wshadow -O0 -g -std=c99"
 
 clang $FLAGS -o ./target/$1 ./src/$1.c &&
 ./target/$1

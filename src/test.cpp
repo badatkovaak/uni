@@ -1,20 +1,18 @@
 #include <array>
 #include <iostream>
 
-template <size_t N> void print_array(std::array<int, N> *arr)
-{
-    for (int i : *arr)
-    {
+template <size_t N>
+void print_array(std::array<int, N> *arr) {
+    for (int i : *arr) {
         std::cout << i << " ";
     }
     std::cout << "\n";
 }
 
-template <size_t N> int product(std::array<int, N> *arr)
-{
+template <size_t N>
+int product(std::array<int, N> *arr) {
     int res = 1;
-    for (int i = 0; i < N; i++)
-    {
+    for (int i = 0; i < N; i++) {
         if (2 * i < N)
             // if (arr[i] != 0)
             res *= arr->at(2 * i);
@@ -22,45 +20,38 @@ template <size_t N> int product(std::array<int, N> *arr)
     return res;
 }
 
-template <size_t N> int sum_between_zeros(std::array<int, N> *arr)
-{
+template <size_t N>
+int sum_between_zeros(std::array<int, N> *arr) {
     int res = 0;
     unsigned first, last;
 
-    for (int i = 0; i < N; i++)
-    {
-        if (arr->at(i) == 0)
-        {
+    for (int i = 0; i < N; i++) {
+        if (arr->at(i) == 0) {
             first = i;
             break;
         }
     }
 
-    for (int i = N - 1; i >= 0; i--)
-    {
-        if (arr->at(i) == 0)
-        {
+    for (int i = N - 1; i >= 0; i--) {
+        if (arr->at(i) == 0) {
             last = i;
             break;
         }
     }
 
-    for (int i = first; i < last; i++)
-    {
+    for (int i = first; i < last; i++) {
         res += arr->at(i);
     }
     return res;
 }
 
-template <size_t N> void rearrange(std::array<int, N> *arr)
-{
+template <size_t N>
+void rearrange(std::array<int, N> *arr) {
     int j = 0;
     int temp = 0;
 
-    for (int i = 0; i < N; i++)
-    {
-        if (arr->at(i) >= 0)
-        {
+    for (int i = 0; i < N; i++) {
+        if (arr->at(i) >= 0) {
             temp = arr->at(j);
             arr->at(j) = arr->at(i);
             arr->at(i) = temp;
@@ -69,8 +60,7 @@ template <size_t N> void rearrange(std::array<int, N> *arr)
     }
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     const unsigned LEN = 10;
     int *a = new int[LEN];
 

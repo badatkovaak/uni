@@ -2,8 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define LIST_IMPLEMENTATION ;
+#define LIST_IMPL
 #include "list.h"
+
+#define ARENA_IMPL
+#include "arena.h"
+
+#define STRING_IMPL
+#include "string.h"
 
 typedef unsigned long un;
 
@@ -12,12 +18,19 @@ void print_un(void* d) { printf("val : %lu\n", *((un*)d)); }
 int main(void) {
     // printf("size : %lu\n", sizeof(list));
     const size_t array_len = 10;
-    un** a = (un**)malloc(sizeof(un) * array_len);
+    Arena* arena = create_arena(sizeof(un) * array_len * 3);
+    un** a = (un**)arena_malloc(arena, sizeof(un) * array_len);
     for (un i = 0; i < array_len; i++) {
-        un* b = (un*)malloc(sizeof(un));
+        un* b = (un*)arena_malloc(arena, sizeof(un));
         *b = i;
         a[i] = b;
     }
+    // un** a = (un**)malloc(sizeof(un) * array_len);
+    // for (un i = 0; i < array_len; i++) {
+    //     un* b = (un*)malloc(sizeof(un));
+    //     *b = i;
+    //     a[i] = b;
+    // }
     list* l = create_node(a[0]);
     // printf("l : %lu %lu %lu\n", (un)l, (un)l->data, (un)l->next);
 
@@ -50,10 +63,10 @@ int main(void) {
 
     delete_list(l);
 
-    for (un i = 0; i < array_len; i++) {
-        free(a[i]);
-    }
-    free(a);
+    // for (un i = 0; i < array_len; i++) {
+    //     free(a[i]);
+    // }
+    free_arena(arena);
 
     return EXIT_SUCCESS;
 }

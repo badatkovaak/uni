@@ -1,4 +1,5 @@
-// Linked List
+#ifndef LIST_H
+#define LIST_H
 
 typedef struct list {
     void* data;
@@ -6,24 +7,18 @@ typedef struct list {
 } list;
 
 void push(list* first, void* data);
-
 void insert(list* first, unsigned index, void* data);
-
 void insert_front(list* first, void* data);
-
 void* pop(list* first);
-
 void* remove_front(list* first);
-
 list* create_node(void* data);
-
 list* create_from_array(void** array, unsigned array_len);
-
 void map(list* first, void (*func)(void*));
-
 void delete_list(list* first);
 
-#ifdef LIST_IMPLEMENTATION
+#endif
+
+#ifdef LIST_IMPL
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,7 +53,7 @@ void insert(list* first, unsigned index, void* data) {
     }
 
     if (count != index) {
-        printf("Incorrect index\n");
+        puts("Incorrect index");
         return;
     }
 
@@ -156,4 +151,4 @@ void delete_list(list* first) {
     free(prev);
 }
 
-#endif  // LIST_IMPLEMENTATION
+#endif  // LIST_IMPL
