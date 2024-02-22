@@ -14,22 +14,14 @@ typedef struct Vector {
 
 #define Vec_Impl(type)                                                         \
   u64 closest_pow_2(u64 num) {                                                 \
-    u64 res = num;                                                             \
-    printf("%lu %lu\n", res, num);                                             \
-    while (num % 2 == 0) {                                                     \
-      printf("%lu\n", num);                                                    \
-      num /= 2;                                                                \
+    u64 res = 8;                                                               \
+    while (res < num) {                                                        \
+      res *= 2;                                                                \
     }                                                                          \
-    printf("%lu %lu\n", res, num);                                             \
-    return num / res;                                                          \
+    return res;                                                                \
   }                                                                            \
   Vector create_with_capacity_##type(u64 capacity) {                           \
     u64 temp = closest_pow_2(capacity);                                        \
-    printf("%lu %lu\n", capacity, temp);                                       \
-    if (temp != capacity) {                                                    \
-      temp *= 2;                                                               \
-    }                                                                          \
-    printf("%lu %lu\n", capacity, temp);                                       \
     void *data = malloc(temp * sizeof(type));                                  \
     memset(data, 0, temp * sizeof(type));                                      \
     Vector vec = {data, 0, temp};                                              \

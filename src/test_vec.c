@@ -8,13 +8,12 @@
 Vec_Impl(u64);
 
 int main(void) {
-  printf("%lu", sizeof(unsigned long));
   Vector vec = create_with_capacity_u64(10);
   printf("Hi There %lu %lu %lu\n", (u64)vec.data, (u64)vec.len, vec.capacity);
   for (u64 i = 0; i < 10; i++) {
     push_u64(&vec, i);
   }
-
+  u64 l = pop_u64(&vec);
   for (u64 i = 0; i < 10; i++) {
     printf("%lu\n", get_u64(&vec, i));
   }
