@@ -53,6 +53,34 @@ int is_correct(char* buffer, size_t len) {
     return 0;
 }
 
+int is_correct1(char* buffer, size_t len) {
+    if (len % 2 != 0 || buffer[0] == ')') {
+        printf("Path1\n");
+        return -1;
+    }
+    size_t slen = (len) / 2;
+    size_t stack_ptr = 0;
+    for (u64 i = 0; i < len; i++) {
+        switch (buffer[i]) {
+            case '(':
+                stack_ptr++;
+                if (stack_ptr >= slen && buffer[i + 1] != ')') {
+                    return -1;
+                }
+                break;
+            case ')':
+                stack_ptr--;
+                break;
+            default:
+                return -1;
+        }
+    }
+    if (stack_ptr) {
+        return -1;
+    }
+    return 0;
+}
+
 int main(void) {
     size_t len = 64;
     char* buff = malloc(len);
@@ -65,7 +93,7 @@ int main(void) {
         print_buf(buff, len);
         int ans = -1;
         if (read_len > 1) {
-            ans = is_correct(buff, read_len - 1);
+            ans = is_correct1(buff, read_len - 1);
         }
         printf("Ans : %d\n", ans);
     }
