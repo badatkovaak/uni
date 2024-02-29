@@ -2,5 +2,5 @@
 
 FLAGS="-Wall -Wextra -Wpedantic -Wshadow -O0 -g"
 
-clang $FLAGS -o ./target/$1 ./src/$1.c &&
+gcc $FLAGS -o ./target/$1 ./src/$1.c &&
 ./target/$1

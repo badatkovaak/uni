@@ -18,7 +18,14 @@ int main(void) {
     }
     printf("Hi There %lu %lu %lu\n", (u64)vec.data, vec.len, vec.capacity);
     u64 l = pop_u64(&vec);
-    insert_u64(&vec, l, vec.len);
+    printf("Hi There %lu %lu %lu\n", (u64)vec.data, vec.len, vec.capacity);
+    for (u64 i = 0; i < vec.len; i++) {
+        printf("%lu : %lu\n", i, get_u64(&vec, i));
+    }
+    printf("Hi There %lu %lu %lu\n", (u64)vec.data, vec.len, vec.capacity);
+    insert_u64(&vec, l, 0);
+    remove_u64(&vec, 22);
+    printf("Hi There %lu %lu %lu\n", (u64)vec.data, vec.len, vec.capacity);
     for (u64 i = 0; i < vec.len; i++) {
         printf("%lu : %lu\n", i, get_u64(&vec, i));
     }

@@ -84,9 +84,10 @@ typedef struct Vector {
             return 0;                                                      \
         }                                                                  \
                                                                            \
+        printf("%lu \n", v->len);                                          \
         type res = ((type *)v->data)[index];                               \
-        void *src = (void *)((u64)v->data + index * sizeof(type));         \
-        memmove((void *)((u64)src + sizeof(type)), src, v->len - index);   \
+        void *src = (void *)((u64)v->data + (index + 1) * sizeof(type));   \
+        memmove(src - sizeof(type), src, v->len - index);                  \
         v->len -= 1;                                                       \
         return res;                                                        \
     }                                                                      \
