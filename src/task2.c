@@ -24,6 +24,7 @@ typedef enum Dir {
     Left,
 } Dir;
 
+Vec_Decl(Dir);
 Vec_Impl(Dir);
 
 // typedef struct {
@@ -39,9 +40,9 @@ static LAB[16] = {
     0,1,0,0,
 };
 
-apply_path(Coord init, Vector p){
-    for (u64 i = 0; i < p.len; i++) {
-        switch ((Dir)p.data[i]) {
+Coord apply_path(Coord init, Vector_Dir* p){
+    for (u64 i = 0; i < p->len; i++) {
+        switch ((Dir)p->data[i]) {
             case Down:
                 init.y -= 1;
                 break;
@@ -56,24 +57,41 @@ apply_path(Coord init, Vector p){
                 break;
         }
     }
+    return Coord;
 }
 
-Vector solveLabyrinth(Labyrinth l, Vector p) { 
-    Coord init;
-    if (!p.len) {
-        init = (Coord) { 0, 0 };
-    } else {
-        init = apply_path((u64)0, p);
-    }
+Vector_Dir solveLabyrinth(Labyrinth* l, Vector_Dir* p, Coord init) { 
+    // Coord init;
+    // if (!p->len) {
+    //     init = (Coord) { 0, 0 };
+    // } else {
+    //     init = apply_path((u64)0, p);
+    // }
     
     Coord curr = init;
     for (u64 i = 1; i < 5; i++){
         switch(i) {
             case Down:
-                if (curr.y == l.height) {
+                if (curr.y + 1 == l->height) {
                     break;
                 }
-
+                if (l->cells[curr.y * l->width + curr.x]) {
+                    break;
+                }
+                
+                break;
+            case Right:
+                if (curr.x + 1 == l->width) {
+                    break;
+                }
+            case Up:
+                if (!curr.y) {
+                    break;
+                }
+            case Left:
+                if (!curr.x) {
+                    break;
+                }
         }
     }
     // u64 avail_paths_count = 

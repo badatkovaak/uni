@@ -6,12 +6,13 @@
 #include "option.h"
 #include "vector.h"
 
+Vec_Decl(u64);
 Vec_Impl(u64);
-Option(u64);
-Option_Impl(u64);
+// Option(u64);
+// Option_Impl(u64);
 
 int main(void) {
-    Vector vec = create_with_capacity_u64(10);
+    Vector_u64 vec = create_with_capacity_u64(10);
     printf("Hi There %lu %lu %lu\n", (u64)vec.data, vec.len, vec.capacity);
     for (u64 i = 0; i < 30; i++) {
         push_u64(&vec, i);
