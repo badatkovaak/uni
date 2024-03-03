@@ -33,44 +33,46 @@ Vec_Impl(Dir);
 //     u64 len;
 // } Path;
 
-static LAB[16] = {
-    0,1,0,1,
-    0,1,0,1,
-    0,0,0,1,
-    0,1,0,0,
+// clang-format off
+static u8 LAB[16] = {
+    0, 1, 0, 1,
+    0, 1, 0, 1,
+    0, 0, 0, 1,
+    0, 1, 0, 0,
 };
+// clang-format on
 
-Coord apply_path(Coord init, Vector_Dir* p){
+Coord apply_path(Coord init, Vector_Dir* p) {
     for (u64 i = 0; i < p->len; i++) {
         switch ((Dir)p->data[i]) {
             case Down:
                 init.y -= 1;
                 break;
-            case Right: 
+            case Right:
                 init.x += 1;
                 break;
             case Up:
                 init.y += 1;
                 break;
-            case Left: 
+            case Left:
                 init.x -= 1;
                 break;
         }
     }
-    return Coord;
+    return init;
 }
 
-Vector_Dir solveLabyrinth(Labyrinth* l, Vector_Dir* p, Coord init) { 
+Vector_Dir solveLabyrinth(Labyrinth* l, Vector_Dir* p, Coord init) {
     // Coord init;
     // if (!p->len) {
     //     init = (Coord) { 0, 0 };
     // } else {
     //     init = apply_path((u64)0, p);
     // }
-    
+
     Coord curr = init;
-    for (u64 i = 1; i < 5; i++){
-        switch(i) {
+    for (u64 i = 1; i < 5; i++) {
+        switch (i) {
             case Down:
                 if (curr.y + 1 == l->height) {
                     break;
@@ -78,7 +80,7 @@ Vector_Dir solveLabyrinth(Labyrinth* l, Vector_Dir* p, Coord init) {
                 if (l->cells[curr.y * l->width + curr.x]) {
                     break;
                 }
-                
+
                 break;
             case Right:
                 if (curr.x + 1 == l->width) {
@@ -94,14 +96,13 @@ Vector_Dir solveLabyrinth(Labyrinth* l, Vector_Dir* p, Coord init) {
                 }
         }
     }
-    // u64 avail_paths_count = 
-    // if 
+    // u64 avail_paths_count =
+    // if
 
-    return (Path){0, 0}; 
+    return (Vector_Dir){0, 0, 0};
 }
 
 int main(void) {
-    
     // printf("%u %u %u\n", sizeof(Labyrinth), sizeof(Coord), sizeof(Path));
     if (true) {
     }

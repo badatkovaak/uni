@@ -3,12 +3,12 @@
 
 #include "defines.h"
 
-#define Vec_Decl(type)\
-typedef struct Vector_##type {\
-    type *data;\
-    u64 len;\
-    u64 capacity;\
-} Vector_##type;\
+#define Vec_Decl(type)             \
+    typedef struct Vector_##type { \
+        type *data;                \
+        u64 len;                   \
+        u64 capacity;              \
+    } Vector_##type;
 
 #include <stdlib.h>
 #include <string.h>
@@ -25,7 +25,7 @@ typedef struct Vector_##type {\
         u64 temp = closest_pow_2(capacity);                                \
         void *data = malloc(temp * sizeof(type));                          \
         memset(data, 0, temp * sizeof(type));                              \
-        Vector_##type vec = {(type*) data, 0, temp};                       \
+        Vector_##type vec = {(type *)data, 0, temp};                       \
         return vec;                                                        \
     }                                                                      \
     void push_##type(Vector_##type *v, type value) {                       \
@@ -36,7 +36,7 @@ typedef struct Vector_##type {\
         }                                                                  \
                                                                            \
         void *old_data = v->data;                                          \
-        v->data = (type*)malloc(2 * v->len * sizeof(type));                \
+        v->data = (type *)malloc(2 * v->len * sizeof(type));               \
         memcpy(v->data, old_data, v->len * sizeof(type));                  \
         free(old_data);                                                    \
         v->capacity = v->len * 2;                                          \
@@ -53,7 +53,7 @@ typedef struct Vector_##type {\
         }                                                                  \
         if (v->capacity - v->len == 0) {                                   \
             void *old_data = v->data;                                      \
-            v->data = (type*)malloc(2 * v->len * sizeof(type));            \
+            v->data = (type *)malloc(2 * v->len * sizeof(type));           \
             memcpy(v->data, old_data, v->len * sizeof(type));              \
             free(old_data);                                                \
             v->capacity = v->len * 2;                                      \
