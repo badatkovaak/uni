@@ -3,7 +3,7 @@
 #include "defines.h"
 #include "vector.h"
 
-#define Opposite(d) (d >= 2) ? d - 2 : d + 2
+#define Opposite(d) (d > 2) ? d - 2 : d + 2
 
 typedef struct {
     u8* cells;
@@ -26,18 +26,19 @@ typedef enum Dir {
 Vec_Decl(Dir);
 Vec_Impl(Dir);
 
-// typedef struct {
-//     Direction* dirs;
-//     // Coord* coords;
-//     u64 len;
-// } Path;
-
 // clang-format off
-static u8 LAB[16] = {
-    0, 1, 0, 1,
-    0, 1, 0, 1,
-    0, 0, 0, 1,
-    0, 1, 0, 0,
+// static u8 LAB[16] = {
+//     0, 1, 0, 1,
+//     0, 1, 0, 1,
+//     0, 0, 0, 1,
+//     0, 1, 0, 0,
+// };
+static u8 LAB[25] = {
+    0, 0, 1, 1, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 1, 0, 1,
+    0, 0, 1, 0, 0,
+    1, 0, 0, 1, 0,
 };
 // clang-format on
 
@@ -50,8 +51,9 @@ u8 countSetBits(u8 n) {
     return count;
 }
 
-Coord apply_path(Coord init, Vector_Dir* p) {
-    for (u64 i = 0; i < p->len; i++) {
+Coord apply_path(Coord init, Vector_Dir* p, u64 start) {
+    puts("");
+    for (u64 i = p->len - start; i < p->len; i++) {
         switch ((Dir)p->data[i]) {
             case Down:
                 init.y += 1;
@@ -66,7 +68,9 @@ Coord apply_path(Coord init, Vector_Dir* p) {
                 init.x -= 1;
                 break;
         }
+        printf("  init : %u %u\n", init.x, init.y);
     }
+    puts("");
     return init;
 }
 
@@ -85,21 +89,27 @@ Vector_Dir solveLabyrinth(Labyrinth* l, Vector_Dir* d, Coord init) {
     }
 
     for (;;) {
-        printf("coords %u %u\n", curr.x, curr.y);
+        printf("coords %u %u came : %u\n", curr.x, curr.y, came_from);
         for (u64 i = 1; i < 5; i++) {
             switch (i) {
                 case Down:
                     if (curr.y + 1 == l->height || came_from == Down) {
-                        printf("Down %u %u\n", curr.y, l->height);
+                        printf("Down %u\n", curr.y);
                         break;
                     }
-                    if (!l->cells[(curr.y + 1) * l->width + curr.x]) {
+                    if (l->cells[(curr.y + 1) * l->width + curr.x]) {
+                        printf("Down Cell %u\n",
+                               l->cells[(curr.y + 1) * l->width + curr.x]);
                         break;
                     }
                     if ((curr.y + 1) * l->width + curr.x ==
-                        (l->width - 1) * (l->height - 1)) {
+                        l->width * l->height + 1) {
+                        printf("Down Is The End %u %u %u %u\n",
+                               l->width * l->height - 1,
+                               curr.y * l->width + curr.x + 1, curr.x, curr.y);
                         push_Dir(&walked, Down);
                         for (u64 i = d->len - 1; i >= 0; i--) {
+                            // printf("Here\n");
                             push_Dir(&walked, get_Dir(d, i));
                         }
                         return walked;
@@ -109,17 +119,21 @@ Vector_Dir solveLabyrinth(Labyrinth* l, Vector_Dir* d, Coord init) {
                     break;
                 case Right:
                     if (curr.x + 1 == l->width || came_from == Right) {
-                        printf("Right %u %u\n", curr.x, l->width);
+                        printf("Right %u\n", curr.x);
                         break;
                     }
-                    if (!l->cells[curr.y * l->width + curr.x + 1]) {
+                    if (l->cells[curr.y * l->width + curr.x + 1]) {
+                        printf("Right Cell\n");
                         break;
                     }
                     if (curr.y * l->width + curr.x + 1 ==
-                        (l->width - 1) * (l->height - 1)) {
-                        push_Dir(&walked, Down);
-                        for (u64 i = d->len - 1; i >= 0; i--) {
-                            push_Dir(&walked, get_Dir(d, i));
+                        l->width * l->height - 1) {
+                        printf("Right Is The End %u %u %u %u\n",
+                               l->width * l->height - 1,
+                               curr.y * l->width + curr.x + 1, curr.x, curr.y);
+                        push_Dir(&walked, Right);
+                        for (u64 i = 0; i < d->len; i++) {
+                            push_Dir(&walked, get_Dir(d, d->len - i - 1));
                         }
                         return walked;
                     }
@@ -128,10 +142,11 @@ Vector_Dir solveLabyrinth(Labyrinth* l, Vector_Dir* d, Coord init) {
                     break;
                 case Up:
                     if (!curr.y || came_from == Up) {
-                        printf("Up %u %u\n", curr.y, l->height);
+                        printf("Up %u\n", curr.y);
                         break;
                     }
-                    if (!l->cells[(curr.y - 1) * l->width + curr.x]) {
+                    if (l->cells[(curr.y - 1) * l->width + curr.x]) {
+                        printf("Up Cell\n");
                         break;
                     }
                     avail[count] = Up;
@@ -139,10 +154,11 @@ Vector_Dir solveLabyrinth(Labyrinth* l, Vector_Dir* d, Coord init) {
                     break;
                 case Left:
                     if (!curr.x || came_from == Left) {
-                        printf("Left %u %u\n", curr.x, l->width);
+                        printf("Left %u\n", curr.x);
                         break;
                     }
-                    if (!l->cells[curr.y * l->width + curr.x - 1]) {
+                    if (l->cells[curr.y * l->width + curr.x - 1]) {
+                        printf("Left Cell\n");
                         break;
                     }
                     avail[count] = Left;
@@ -156,41 +172,39 @@ Vector_Dir solveLabyrinth(Labyrinth* l, Vector_Dir* d, Coord init) {
         Dir next = 0;
         if (!count) {
             return zero;
-        } else if (count == 1 && curr.x + curr.y != 0) {
-            return zero;
-        } else if (count == 1 && curr.x + curr.y == 0) {
+        } else if (count == 1) {
             printf("avail %u\n", avail[0]);
             next = avail[0];
-        } else if (count == 2) {
-            if (avail[0] != came_from) {
-                next = avail[0];
-            } else {
-                next = avail[1];
-            }
         } else {
             for (u64 i = 0; i < count; i++) {
-                if (avail[i] == came_from) {
-                    continue;
-                }
+                printf("New Instance : %u\n", avail[i]);
                 push_Dir(d, avail[i]);
                 push_Dir(&walked, avail[i]);
-                Vector_Dir res = solveLabyrinth(l, d, curr);
+                Coord new_curr = apply_path(curr, &walked, 1);
+                Vector_Dir res = solveLabyrinth(l, d, new_curr);
                 pop_Dir(&walked);
                 pop_Dir(d);
                 if (!res.len) {
                     puts("Here");
                     continue;
                 } else {
+                    for (u64 i = 0; i < walked.len; i++) {
+                        push_Dir(&res, get_Dir(&walked, i));
+                    }
                     return res;
                 }
             }
+            puts("Path 11");
+            return zero;
         }
         printf("next : %u %u\n", next, came_from);
         push_Dir(&walked, next);
+        printf("walked : %lu\n", walked.len);
         count = 0;
         avail[0] = 0;
         avail[1] = 0;
-        curr = apply_path(curr, &walked);
+        curr = apply_path(curr, &walked, 1);
+        came_from = Opposite(next);
     }
 
     return zero;
@@ -200,7 +214,12 @@ int main(void) {
     // printf("%u %u %u\n", sizeof(Labyrinth), sizeof(Coord), sizeof(Path));
 
     Vector_Dir d = (Vector_Dir){0, 0, 0};
-    Labyrinth l = (Labyrinth){LAB, 4, 4};
-    solveLabyrinth(&l, &d, (Coord){0, 0});
+    Labyrinth l = (Labyrinth){LAB, 5, 5};
+    Vector_Dir res = solveLabyrinth(&l, &d, (Coord){0, 0});
+    printf("res : \n");
+    for (u64 i = 0; i < res.len; i++) {
+        printf("%lu %u\n", i, res.data[i]);
+    }
+    // printf("opp %u\n", Opposite(2));
     return 0;
 }

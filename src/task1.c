@@ -96,33 +96,53 @@ int is_correct2(char* buffer, u64 len, u64 consumed, char type) {
     char closing = type + 1 + (type != '(');
     for (u64 i = consumed; i < len; i++) {
         char b = buffer[i];
-        printf("%lu %c %c %c\n", i, b, type, closing);
+        printf("%lu %c %c\n", i, b, type);
         if (b == type) {
             stack_ptr++;
             cons++;
             if (stack_ptr >= (len / 2) && buffer[i + 1] != closing) {
-                printf("Path2\n");
+                // printf("Path2\n");
                 return -1;
             }
         } else if (b == closing) {
             stack_ptr--;
             cons++;
         } else if (b != type && is_opening(b)) {
+            // printf("Path4\n");
             int res = is_correct2(buffer, len, consumed + cons, b);
             if ((res + 2) % 2 == 1 || res == 0 || res == -1) {
-                printf("Path3\n");
+                // printf("Path3\n");
                 return -1;
             } else {
                 cons += res;
                 i += res - 1;
             }
         } else {
+            // puts("Path5");
             return -1;
         }
-        if (!stack_ptr) {
+        // printf("%lu %lu %c\n", len, consumed + cons, type);
+        if (!stack_ptr && consumed) {
+            return cons;
+        } else if (!stack_ptr && !consumed) {
+            while (cons + consumed < len) {
+                // printf("Path6\n");
+                int res = is_correct2(buffer, len, consumed + cons, type);
+                if ((res + 2) % 2 == 1 || res == 0) {
+                    // printf("Path3\n");
+                    return -1;
+                } else {
+                    cons += res;
+                    if (cons == len) {
+                        return cons;
+                    }
+                    i += res - 1;
+                }
+            }
             return cons;
         }
     }
+
     return cons;
 }
 
