@@ -28,6 +28,14 @@
         Vector_##type vec = {(type *)data, 0, temp};                       \
         return vec;                                                        \
     }                                                                      \
+    Vector_##type create_from_array_##type(type *array, u64 len) {         \
+        u64 temp = closest_pow_2(len);                                     \
+        type *data = malloc(temp * sizeof(type));                          \
+        for (u64 i = 0; i < len; i++) {                                    \
+            data[i] = array[i];                                            \
+        }                                                                  \
+        return (Vector_##type){data, len, temp};                           \
+    }                                                                      \
     void push_##type(Vector_##type *v, type value) {                       \
         if (!v->data) {                                                    \
             v->data = (type *)malloc(8 * sizeof(type));                    \

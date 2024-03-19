@@ -6,22 +6,24 @@
     typedef struct {    \
         u64 is_present; \
         type value;     \
-    } option_##type;
+    } Option_##type;
 
 #define Option_Impl(type)                             \
-    type unwrap_unsafe_##type(option_##type t) {      \
+    Option_##type pure_##type(type value) {           \
+        return (Option_##type){1, value};             \
+    }                                                 \
+    type unwrap_unsafe_##type(Option_##type t) {      \
         if (!t.is_present) {                          \
             puts("Unwrapped Option None.");           \
             __builtin_trap();                         \
         }                                             \
         return t.value;                               \
     }                                                 \
-    type unwrap_or_default(option_##type t, type d) { \
+    type unwrap_or_default(Option_##type t, type d) { \
         if (!t.is_present) {                          \
             return d;                                 \
         }                                             \
         return t.value;                               \
-    }                                                 \
-    // type
+    }
 
 #endif  // !OPTION_H
