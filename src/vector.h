@@ -32,6 +32,9 @@
         if (!v->data) {                                                    \
             v->data = (type *)malloc(8 * sizeof(type));                    \
             v->capacity = 8;                                               \
+            v->data[0] = value;                                            \
+            v->len = 1;                                                    \
+            return;                                                        \
         }                                                                  \
         if (v->capacity > v->len) {                                        \
             v->data[v->len] = value;                                       \
@@ -55,6 +58,16 @@
         if (index > v->len) {                                              \
             return -1;                                                     \
         }                                                                  \
+        if (!v->data && index) {                                           \
+            return -1;                                                     \
+        }                                                                  \
+        if (!v->data) {                                                    \
+            v->data = (type *)malloc(8 * sizeof(type));                    \
+            v->capacity = 8;                                               \
+            v->data[0] = value;                                            \
+            v->len = 1;                                                    \
+            return 0;                                                      \
+        }                                                                  \
         if (v->capacity - v->len == 0) {                                   \
             void *old_data = v->data;                                      \
             v->data = (type *)malloc(2 * v->len * sizeof(type));           \
@@ -72,7 +85,7 @@
     type pop_##type(Vector_##type *v) {                                    \
         if (v->len == 0) {                                                 \
             puts("Trying to pop from empty vector");                       \
-            char u = *(volatile char *)0;                                  \
+            __builtin_trap();                                              \
         }                                                                  \
         type res = v->data[v->len - 1];                                    \
         v->len -= 1;                                                       \
@@ -84,7 +97,7 @@
     type remove_##type(Vector_##type *v, u64 index) {                      \
         if (index <= 0 || index >= v->len) {                               \
             puts("Trying to remove incorrect Index!");                     \
-            char u = *(volatile char *)0;                                  \
+            __builtin_trap();                                              \
         }                                                                  \
                                                                            \
         printf("%lu \n", v->len);                                          \
@@ -97,13 +110,10 @@
     type get_##type(Vector_##type *v, u64 index) {                         \
         if (index >= v->len) {                                             \
             puts("Incorrect Index");                                       \
-            char u = *(volatile char *)0;                                  \
+            __builtin_trap();                                              \
         }                                                                  \
         return v->data[index];                                             \
     }                                                                      \
-    void delete_vec_##type(Vector_##type *v) {                             \
-        free(v->data);                                                     \
-        free(v);                                                           \
-    }
+    void delete_vec_##type(Vector_##type *v) { free(v->data); }
 
 #endif  // !VECTOR_H

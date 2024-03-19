@@ -12,8 +12,7 @@
     type unwrap_unsafe_##type(option_##type t) {      \
         if (!t.is_present) {                          \
             puts("Unwrapped Option None.");           \
-            char x = *(volatile char*)0;              \
-            return 0;                                 \
+            __builtin_trap();                         \
         }                                             \
         return t.value;                               \
     }                                                 \
@@ -22,7 +21,7 @@
             return d;                                 \
         }                                             \
         return t.value;                               \
-    }
-// type
+    }                                                 \
+    // type
 
 #endif  // !OPTION_H
