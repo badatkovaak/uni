@@ -1,5 +1,6 @@
 #include <poll.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 typedef unsigned long un;
@@ -12,7 +13,8 @@ int main(void) {
     struct pollfd fds[1] = {{0, POLLIN, 0}};
 
     for (;;) {
-        char buffer[len] = {0};
+        char buffer[len];
+        memset(buffer, 0, len);
         poll(fds, 1, 50000);
 
         if (fds[0].revents & POLLIN) {

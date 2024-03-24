@@ -8,7 +8,7 @@
 
 Vec_Decl(u64);
 Vec_Impl(u64);
-Option(u64);
+Option_Decl(u64);
 Option_Impl(u64);
 
 int main(void) {

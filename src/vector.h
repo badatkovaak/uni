@@ -14,7 +14,7 @@
 #include <string.h>
 
 #define Vec_Impl(type)                                                     \
-    u64 closest_pow_2(u64 num) {                                           \
+    u64 closest_pow_2_##type(u64 num) {                                    \
         u64 res = 8;                                                       \
         while (res < num) {                                                \
             res *= 2;                                                      \
@@ -22,14 +22,14 @@
         return res;                                                        \
     }                                                                      \
     Vector_##type create_with_capacity_##type(u64 capacity) {              \
-        u64 temp = closest_pow_2(capacity);                                \
+        u64 temp = closest_pow_2_##type(capacity);                         \
         void *data = malloc(temp * sizeof(type));                          \
         memset(data, 0, temp * sizeof(type));                              \
         Vector_##type vec = {(type *)data, 0, temp};                       \
         return vec;                                                        \
     }                                                                      \
     Vector_##type create_from_array_##type(type *array, u64 len) {         \
-        u64 temp = closest_pow_2(len);                                     \
+        u64 temp = closest_pow_2_##type(len);                              \
         type *data = malloc(temp * sizeof(type));                          \
         for (u64 i = 0; i < len; i++) {                                    \
             data[i] = array[i];                                            \

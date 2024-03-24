@@ -8,8 +8,8 @@
 #define ARENA_IMPL
 #include "arena.h"
 
-#define STRING_IMPL
-#include "string.h"
+// #define STRING_IMPL
+// #include "string.h"
 
 typedef unsigned long un;
 
