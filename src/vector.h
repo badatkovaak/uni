@@ -8,7 +8,7 @@
         type *data;                \
         u64 len;                   \
         u64 capacity;              \
-    } Vector_##type;
+    } Vec_##type;
 
 #include <stdlib.h>
 #include <string.h>
@@ -21,22 +21,22 @@
         }                                                                  \
         return res;                                                        \
     }                                                                      \
-    Vector_##type create_with_capacity_##type(u64 capacity) {              \
+    Vec_##type create_with_capacity_##type(u64 capacity) {                 \
         u64 temp = closest_pow_2_##type(capacity);                         \
         void *data = malloc(temp * sizeof(type));                          \
         memset(data, 0, temp * sizeof(type));                              \
-        Vector_##type vec = {(type *)data, 0, temp};                       \
+        Vec_##type vec = {(type *)data, 0, temp};                          \
         return vec;                                                        \
     }                                                                      \
-    Vector_##type create_from_array_##type(type *array, u64 len) {         \
+    Vec_##type create_from_array_##type(type *array, u64 len) {            \
         u64 temp = closest_pow_2_##type(len);                              \
         type *data = malloc(temp * sizeof(type));                          \
         for (u64 i = 0; i < len; i++) {                                    \
             data[i] = array[i];                                            \
         }                                                                  \
-        return (Vector_##type){data, len, temp};                           \
+        return (Vec_##type){data, len, temp};                              \
     }                                                                      \
-    void push_##type(Vector_##type *v, type value) {                       \
+    void push_##type(Vec_##type *v, type value) {                          \
         if (!v->data) {                                                    \
             v->data = (type *)malloc(8 * sizeof(type));                    \
             v->capacity = 8;                                               \
@@ -62,7 +62,7 @@
                                                                            \
         return;                                                            \
     }                                                                      \
-    int insert_##type(Vector_##type *v, type value, u64 index) {           \
+    int insert_##type(Vec_##type *v, type value, u64 index) {              \
         if (index > v->len) {                                              \
             return -1;                                                     \
         }                                                                  \
@@ -90,7 +90,7 @@
         v->len += 1;                                                       \
         return 0;                                                          \
     }                                                                      \
-    type pop_##type(Vector_##type *v) {                                    \
+    type pop_##type(Vec_##type *v) {                                       \
         if (v->len == 0) {                                                 \
             puts("Trying to pop from empty vector");                       \
             __builtin_trap();                                              \
@@ -102,7 +102,7 @@
         }                                                                  \
         return res;                                                        \
     }                                                                      \
-    type remove_##type(Vector_##type *v, u64 index) {                      \
+    type remove_##type(Vec_##type *v, u64 index) {                         \
         if (index <= 0 || index >= v->len) {                               \
             puts("Trying to remove incorrect Index!");                     \
             __builtin_trap();                                              \
@@ -111,17 +111,17 @@
         printf("%lu \n", v->len);                                          \
         type res = v->data[index];                                         \
         void *src = (void *)((u64)v->data + (index + 1) * sizeof(type));   \
-        memmove(src - sizeof(type), src, v->len - index);                  \
+        memmove((void *)((u64)src - sizeof(type)), src, v->len - index);   \
         v->len -= 1;                                                       \
         return res;                                                        \
     }                                                                      \
-    type get_##type(Vector_##type *v, u64 index) {                         \
+    type get_##type(Vec_##type *v, u64 index) {                            \
         if (index >= v->len) {                                             \
             puts("Incorrect Index");                                       \
             __builtin_trap();                                              \
         }                                                                  \
         return v->data[index];                                             \
     }                                                                      \
-    void delete_vec_##type(Vector_##type *v) { free(v->data); }
+    void delete_vec_##type(Vec_##type *v) { free(v->data); }
 
 #endif  // !VECTOR_H

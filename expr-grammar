@@ -1,3 +1,6 @@
-Expr := Binary_Op  | Term
-Term := '(' Expr ')' | Int
+Expr := Binary_Op  | Term 
 Binary_Op := Term ('+' | '-' | '*' | '/' | '^') Term
+Term := '(' Expr ')' | Int
+
+Expr := Term (('+' | '-' | '*' | '/' | '^') Expr)?
+Term := '(' Expr ')' | Int

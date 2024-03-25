@@ -12,6 +12,9 @@
 
 #define is_valid_token(t) (t >= 1 && t <= 8)
 #define is_digit(c) (c >= 48 && c <= 57)
+#define is_binary_op(c) \
+    (c == Plus || c == Minus || c == Mult || c == Div || c == Power)
+#define precedence(c) ((c + 1) / 2)
 
 Option_Decl(char);
 Option_Impl(char);
@@ -29,6 +32,13 @@ typedef enum {
     LParen,
     RParen,
     IntLiteral,
+} TokenType;
+
+typedef struct {
+    TokenType type;
+    union {
+        long int_val;
+    };
 } Token;
 
 Vec_Decl(i64);
@@ -36,17 +46,10 @@ Vec_Impl(i64);
 Vec_Decl(Token);
 Vec_Impl(Token);
 
-// typedef struct {
-//     i64* data;
-//     u64 len;
-//     u64 pos;
-// } LiteralBuffer;
-
 typedef struct {
     char* buffer;
     u64 len;
     u64 pos;
-    Vector_i64* lit;
 } Lexer;
 
 Option_i64 read_int_literal(Lexer* l) {
@@ -82,64 +85,69 @@ Option_i64 read_int_literal(Lexer* l) {
     return pure_i64(res);
 }
 
-int lex_int_literal(Lexer* l, Vector_Token* v) {
+int lex_int_literal(Lexer* l, Vec_Token* v) {
     if (l->buffer[l->pos] == '-') {
         if (l->pos + 1 >= l->len) {
-            push_Token(v, Minus);
+            push_Token(v, (Token){Minus, {0}});
             return 0;
         }
-
         if (is_digit(l->buffer[l->pos + 1])) {
-            goto res;
-            //     l->pos += 1;
-            //     Option_i64 i = read_int_literal(l);
-            //     if (!i.is_present) {
-            //         return -1;
-            //     } else {
-            //         push_Token(v, IntLiteral);
-            //         push_i64(l->lit, i.value);
-            //         return 0;
-            //     }
+            l->pos += 1;
+            Option_i64 i = read_int_literal(l);
+            if (!i.is_present) {
+                return -1;
+            } else {
+                push_Token(v, (Token){IntLiteral, {-i.value}});
+                return 0;
+            }
         } else {
-            push_Token(v, Minus);
+            push_Token(v, (Token){Minus, {0}});
             return 0;
         }
     } else {
-    res:
-        l->pos += 1;
         Option_i64 i = read_int_literal(l);
         if (!i.is_present) {
             return -1;
         } else {
-            push_Token(v, IntLiteral);
-            push_i64(l->lit, i.value);
+            push_Token(v, (Token){IntLiteral, {i.value}});
             return 0;
         }
     }
     return -1;
 }
 
-Vector_Token lex(Lexer* l) {
-    Vector_Token res = create_with_capacity_Token(16);
-    for (u64 i = 0; i < l->len; i++) {
-        char curr = l->buffer[i];
+Vec_Token lex(Lexer* l) {
+    Vec_Token res = create_with_capacity_Token(16);
+    for (; l->pos < l->len; l->pos++) {
+        char curr = l->buffer[l->pos];
         if (curr == '-' || is_digit(curr)) {
             int r = lex_int_literal(l, &res);
+            if (r) {
+                return (Vec_Token){0, 0, 0};
+            }
+            continue;
         }
         switch (curr) {
             case '+':
+                push_Token(&res, (Token){Plus, {0}});
                 break;
             case '-':
+                push_Token(&res, (Token){Minus, {0}});
                 break;
             case '*':
+                push_Token(&res, (Token){Mult, {0}});
                 break;
             case '/':
+                push_Token(&res, (Token){Div, {0}});
                 break;
             case '^':
+                push_Token(&res, (Token){Power, {0}});
                 break;
             case '(':
+                push_Token(&res, (Token){LParen, {0}});
                 break;
             case ')':
+                push_Token(&res, (Token){RParen, {0}});
                 break;
             case ' ':
             case '\n':
@@ -147,7 +155,52 @@ Vector_Token lex(Lexer* l) {
                 break;
         }
     }
-    return (Vector_Token){0, 0, 0};
+    return res;
+}
+
+int parse_expr(Vec_Token* table, Vec_Token* v, Vec_Token* ops, u64 pos);
+int parse_term(Vec_Token* table, Vec_Token* input, Vec_Token* ops, u64 pos);
+
+int parse_term(Vec_Token* table, Vec_Token* input, Vec_Token* ops, u64 pos) {
+    Token c = input->data[pos];
+    if (c.type == LParen) {
+        int res = parse_expr(table, input, ops, pos + 1);
+        if (res == -1) {
+            return -1;
+        }
+        if (input->data[pos + 1 + res].type == RParen) {
+            return 2 + res;
+        }
+    } else if (c.type == IntLiteral) {
+        push_Token(table, c);
+        return 1;
+    }
+    return -1;
+}
+
+int parse_expr(Vec_Token* table, Vec_Token* input, Vec_Token* ops, u64 pos) {
+    int res1 = parse_term(table, input, ops, pos);
+    if (res1 == -1) {
+        return -1;
+    }
+    Token c = input->data[pos + res1];
+    if (!is_binary_op(c.type)) {
+        return res1;
+    }
+    int res2 = parse_expr(table, input, ops, pos + res1 + 1);
+    if (res2 == -1) {
+        return -1;
+    }
+    push_Token(table, c);
+    return res1 + res2 + 1;
+}
+
+Vec_Token parse(Vec_Token* v) {
+    Vec_Token table = create_with_capacity_Token(v->len);
+    Vec_Token ops = create_with_capacity_Token(0);
+    int res = parse_expr(&table, v, &ops, 0);
+    printf("Parsed tokens : %d out of %lu\n", res, v->len);
+    return table;
 }
 
 int main(void) {
@@ -161,7 +214,18 @@ int main(void) {
 
         if (fds[0].revents & POLLIN) {
             read(0, buffer, len - 1);
-            printf("%s\n", buffer);
+            Lexer l = {buffer, strlen(buffer), 0};
+            Vec_Token toks = lex(&l);
+            for (u64 i = 0; i < toks.len; i++) {
+                printf("toks : %d - %li\n", toks.data[i].type,
+                       toks.data[i].int_val);
+            }
+            Vec_Token res = parse(&toks);
+            for (u64 i = 0; i < res.len; i++) {
+                printf("res : %d - %li\n", res.data[i].type,
+                       res.data[i].int_val);
+            }
+            // printf("%s\n", buffer);
         }
     }
 

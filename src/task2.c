@@ -92,7 +92,7 @@ const Labyrinth l = {LAB, 5, 5};
 
 // clang-format on
 
-void print_Dirs(Vector_Dir* v) {
+void print_Dirs(Vec_Dir* v) {
     puts("");
     for (u64 i = 0; i < v->len; i++) {
         switch (v->data[i]) {
@@ -113,7 +113,7 @@ void print_Dirs(Vector_Dir* v) {
     puts("");
 }
 
-Coord apply_path(Coord init, Vector_Dir* p, u64 start) {
+Coord apply_path(Coord init, Vec_Dir* p, u64 start) {
     // puts("");
     for (u64 i = p->len - start; i < p->len; i++) {
         switch ((Dir)p->data[i]) {
@@ -136,9 +136,9 @@ Coord apply_path(Coord init, Vector_Dir* p, u64 start) {
     return init;
 }
 
-Vector_Dir solve(Labyrinth* l, Coord curr, Dir last) {
-    Vector_Dir zero = (Vector_Dir){0, 0, 0};
-    Vector_Dir path = zero;
+Vec_Dir solve(Labyrinth* l, Coord curr, Dir last) {
+    Vec_Dir zero = (Vec_Dir){0, 0, 0};
+    Vec_Dir path = zero;
     Dir came_from = 0;
     u64 count = 0;
     Dir avail[4] = {0, 0, 0, 0};
@@ -214,7 +214,7 @@ Vector_Dir solve(Labyrinth* l, Coord curr, Dir last) {
             for (u64 i = 0; i < count; i++) {
                 push_Dir(&path, avail[i]);
                 Coord init = apply_path(curr, &path, 1);
-                Vector_Dir res = solve(l, init, avail[i]);
+                Vec_Dir res = solve(l, init, avail[i]);
                 pop_Dir(&path);
                 if (!res.len) {
                     continue;
@@ -240,9 +240,9 @@ Vector_Dir solve(Labyrinth* l, Coord curr, Dir last) {
 int main(void) {
     // printf("%u %u %u\n", sizeof(Labyrinth), sizeof(Coord), sizeof(Path));
 
-    Vector_Dir d = (Vector_Dir){0, 0, 0};
+    Vec_Dir d = (Vec_Dir){0, 0, 0};
     // Labyrinth l = (Labyrinth){LAB, 5, 5};
-    Vector_Dir res = solve((Labyrinth*)&l, (Coord){0, 0}, 0);
+    Vec_Dir res = solve((Labyrinth*)&l, (Coord){0, 0}, 0);
     printf("res : %lu\n", res.len);
     print_Dirs(&res);
     // for (u64 i = 0; i < res.len; i++) {

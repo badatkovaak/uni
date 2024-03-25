@@ -12,7 +12,7 @@ Option_Decl(u64);
 Option_Impl(u64);
 
 int main(void) {
-    Vector_u64 vec = create_with_capacity_u64(10);
+    Vec_u64 vec = create_with_capacity_u64(10);
     printf("Hi There %lu %lu %lu\n", (u64)vec.data, vec.len, vec.capacity);
     for (u64 i = 0; i < 30; i++) {
         push_u64(&vec, i);
