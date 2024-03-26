@@ -7,21 +7,20 @@
 
 #include "defines.h"
 #include "option.h"
-#include "peekable.h"
 #include "vector.h"
 
 #define is_valid_token(t) (t >= 1 && t <= 8)
 #define is_digit(c) (c >= 48 && c <= 57)
 #define is_binary_op(c) \
     (c == Plus || c == Minus || c == Mult || c == Div || c == Power)
-#define precedence(c) ((c + 1) / 2)
+#define precedence(c) ((c - 1) / 2)
+
+#pragma clang diagnostic ignored "-Wextra-semi"
 
 Option_Decl(char);
 Option_Impl(char);
 Option_Decl(i64);
 Option_Impl(i64);
-Peekable_Decl(char);
-Peekable_Impl(char);
 
 typedef enum {
     Plus = 1,
@@ -36,9 +35,7 @@ typedef enum {
 
 typedef struct {
     TokenType type;
-    union {
-        long int_val;
-    };
+    long int_val;
 } Token;
 
 Vec_Decl(i64);
@@ -88,7 +85,7 @@ Option_i64 read_int_literal(Lexer* l) {
 int lex_int_literal(Lexer* l, Vec_Token* v) {
     if (l->buffer[l->pos] == '-') {
         if (l->pos + 1 >= l->len) {
-            push_Token(v, (Token){Minus, {0}});
+            push_Token(v, (Token){Minus, 0});
             return 0;
         }
         if (is_digit(l->buffer[l->pos + 1])) {
@@ -97,11 +94,11 @@ int lex_int_literal(Lexer* l, Vec_Token* v) {
             if (!i.is_present) {
                 return -1;
             } else {
-                push_Token(v, (Token){IntLiteral, {-i.value}});
+                push_Token(v, (Token){IntLiteral, -i.value});
                 return 0;
             }
         } else {
-            push_Token(v, (Token){Minus, {0}});
+            push_Token(v, (Token){Minus, 0});
             return 0;
         }
     } else {
@@ -109,7 +106,7 @@ int lex_int_literal(Lexer* l, Vec_Token* v) {
         if (!i.is_present) {
             return -1;
         } else {
-            push_Token(v, (Token){IntLiteral, {i.value}});
+            push_Token(v, (Token){IntLiteral, i.value});
             return 0;
         }
     }
@@ -129,25 +126,25 @@ Vec_Token lex(Lexer* l) {
         }
         switch (curr) {
             case '+':
-                push_Token(&res, (Token){Plus, {0}});
+                push_Token(&res, (Token){Plus, 0});
                 break;
             case '-':
-                push_Token(&res, (Token){Minus, {0}});
+                push_Token(&res, (Token){Minus, 0});
                 break;
             case '*':
-                push_Token(&res, (Token){Mult, {0}});
+                push_Token(&res, (Token){Mult, 0});
                 break;
             case '/':
-                push_Token(&res, (Token){Div, {0}});
+                push_Token(&res, (Token){Div, 0});
                 break;
             case '^':
-                push_Token(&res, (Token){Power, {0}});
+                push_Token(&res, (Token){Power, 0});
                 break;
             case '(':
-                push_Token(&res, (Token){LParen, {0}});
+                push_Token(&res, (Token){LParen, 0});
                 break;
             case ')':
-                push_Token(&res, (Token){RParen, {0}});
+                push_Token(&res, (Token){RParen, 0});
                 break;
             case ' ':
             case '\n':
@@ -158,13 +155,46 @@ Vec_Token lex(Lexer* l) {
     return res;
 }
 
-int parse_expr(Vec_Token* table, Vec_Token* v, Vec_Token* ops, u64 pos);
-int parse_term(Vec_Token* table, Vec_Token* input, Vec_Token* ops, u64 pos);
+void pretty_print(Vec_Token* v) {
+    for (u64 i = 0; i < v->len; i++) {
+        Token t = v->data[i];
+        switch (t.type) {
+            case Plus:
+                printf("+ ");
+                break;
+            case Minus:
+                printf("- ");
+                break;
+            case Mult:
+                printf("* ");
+                break;
+            case Div:
+                printf("/ ");
+                break;
+            case Power:
+                printf("^ ");
+                break;
+            case LParen:
+                printf("( ");
+                break;
+            case RParen:
+                printf(") ");
+                break;
+            case IntLiteral:
+                printf("%li ", t.int_val);
+                break;
+        }
+    }
+    printf("\n");
+}
 
-int parse_term(Vec_Token* table, Vec_Token* input, Vec_Token* ops, u64 pos) {
+int parse_expr(Vec_Token* table, Vec_Token* v, u64 pos, u8 prec);
+int parse_term(Vec_Token* table, Vec_Token* input, u64 pos);
+
+int parse_term(Vec_Token* table, Vec_Token* input, u64 pos) {
     Token c = input->data[pos];
     if (c.type == LParen) {
-        int res = parse_expr(table, input, ops, pos + 1);
+        int res = parse_expr(table, input, pos + 1, 0);
         if (res == -1) {
             return -1;
         }
@@ -178,8 +208,13 @@ int parse_term(Vec_Token* table, Vec_Token* input, Vec_Token* ops, u64 pos) {
     return -1;
 }
 
-int parse_expr(Vec_Token* table, Vec_Token* input, Vec_Token* ops, u64 pos) {
-    int res1 = parse_term(table, input, ops, pos);
+int parse_expr(Vec_Token* table, Vec_Token* input, u64 pos, u8 prec) {
+    int res1;
+    if (prec <= 2) {
+        res1 = parse_expr(table, input, pos, prec + 1);
+    } else {
+        res1 = parse_term(table, input, pos);
+    }
     if (res1 == -1) {
         return -1;
     }
@@ -187,18 +222,20 @@ int parse_expr(Vec_Token* table, Vec_Token* input, Vec_Token* ops, u64 pos) {
     if (!is_binary_op(c.type)) {
         return res1;
     }
-    int res2 = parse_expr(table, input, ops, pos + res1 + 1);
-    if (res2 == -1) {
-        return -1;
+    if (precedence(c.type) >= prec) {
+        int res2 = parse_expr(table, input, pos + res1 + 1, prec);
+        if (res2 == -1) {
+            return -1;
+        }
+        push_Token(table, c);
+        return res1 + res2 + 1;
     }
-    push_Token(table, c);
-    return res1 + res2 + 1;
+    return res1;
 }
 
 Vec_Token parse(Vec_Token* v) {
     Vec_Token table = create_with_capacity_Token(v->len);
-    Vec_Token ops = create_with_capacity_Token(0);
-    int res = parse_expr(&table, v, &ops, 0);
+    int res = parse_expr(&table, v, 0, 0);
     printf("Parsed tokens : %d out of %lu\n", res, v->len);
     return table;
 }
@@ -216,15 +253,17 @@ int main(void) {
             read(0, buffer, len - 1);
             Lexer l = {buffer, strlen(buffer), 0};
             Vec_Token toks = lex(&l);
-            for (u64 i = 0; i < toks.len; i++) {
-                printf("toks : %d - %li\n", toks.data[i].type,
-                       toks.data[i].int_val);
-            }
+            pretty_print(&toks);
+            // for (u64 i = 0; i < toks.len; i++) {
+            //     printf("toks : %d - %li\n", toks.data[i].type,
+            //            toks.data[i].int_val);
+            // }
             Vec_Token res = parse(&toks);
-            for (u64 i = 0; i < res.len; i++) {
-                printf("res : %d - %li\n", res.data[i].type,
-                       res.data[i].int_val);
-            }
+            pretty_print(&res);
+            // for (u64 i = 0; i < res.len; i++) {
+            //     printf("res : %d - %li\n", res.data[i].type,
+            //            res.data[i].int_val);
+            // }
             // printf("%s\n", buffer);
         }
     }
