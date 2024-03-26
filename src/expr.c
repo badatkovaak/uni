@@ -31,15 +31,15 @@ typedef enum {
     LParen,
     RParen,
     IntLiteral,
-    Symbol,
+    // Symbol,
 } TokenType;
 
 typedef struct {
     TokenType type;
-    union {
-        long int_val;
-        char name;
-    };
+    // union {
+    long int_val;
+    // char name;
+    // };
 } Token;
 
 Vec_Decl(i64);
@@ -214,7 +214,7 @@ int parse_term(Vec_Token* table, Vec_Token* input, u64 pos) {
 
 int parse_expr(Vec_Token* table, Vec_Token* input, u64 pos, u8 prec) {
     int res1;
-    if (prec <= 2) {
+    if (prec <= 1) {
         res1 = parse_expr(table, input, pos, prec + 1);
     } else {
         res1 = parse_term(table, input, pos);
