@@ -5,4 +5,4 @@ Term := '(' Expr ')' | Int
 Expr1 := Expr2 (('+' | '-') Expr1)?
 Expr2 := Expr3 (('*' | '/') Expr2)?
 Expr3 := Term ('^' Expr3)?
-Term := '(' Expr1 ')' | Int
+Term := '(' Expr1 ')' | Int | Symbol

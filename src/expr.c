@@ -31,11 +31,15 @@ typedef enum {
     LParen,
     RParen,
     IntLiteral,
+    Symbol,
 } TokenType;
 
 typedef struct {
     TokenType type;
-    long int_val;
+    union {
+        long int_val;
+        char name;
+    };
 } Token;
 
 Vec_Decl(i64);
