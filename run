@@ -1,6 +1,7 @@
 #!/bin/sh
 
-FLAGS="-Wall -Wextra -Wpedantic -Wshadow -O0 -g -fsanitize=address"
+FLAGS="-Wall -Wextra -Wpedantic -Wshadow -O0 -g" 
+# -fsanitize=address
 
 clang $FLAGS -o ./target/$1 ./src/$1.c &&
 ./target/$1
