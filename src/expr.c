@@ -267,7 +267,6 @@ void* vec_to_tree(Iter_Token* v, void** root) {
     if (root == nullptr) {
         root = malloc(sizeof(void*));
     }
-    // printf("roots %lu, %lu\n", root, *root);
     for (; v->pos < v->len; v->pos++) {
         printf("i : %lu %lu; tok : ", v->pos, v->len - 1 - v->pos);
         pretty_print_tok(v->data[v->len - 1 - v->pos]);
@@ -282,8 +281,6 @@ void* vec_to_tree(Iter_Token* v, void** root) {
             op->type = t.type;
             vec_to_tree(v, &(op->right));
             vec_to_tree(v, &(op->left));
-            // printf("Leaves %lu %lu %lu %lu %lu\n", op->right, op->left,
-            //        *(u64*)op->right, *(u64*)op->left, op);
             *root = (void*)op;
             return *root;
         } else if (t.type == IntLiteral) {
@@ -309,6 +306,48 @@ void print_tree(void* root) {
         pretty_print_tok((Token){node->type, 0});
         print_tree(node->right);
     }
+}
+
+i64 mypow(i64 n, i64 p) {
+    if (p < 0) {
+        return 0;
+    }
+    i64 res = 1;
+    for (u64 i = 0; i < p; i++) {
+        res *= n;
+    }
+    return res;
+}
+
+i64 eval(void* node) {
+    TokenType t = *(TokenType*)node;
+    if (t == IntLiteral) {
+        return (*(Literal*)node).value;
+    } else if (is_binary_op(t)) {
+        BinaryOp* op = (BinaryOp*)node;
+        i64 res1 = eval(op->left);
+        i64 res2 = eval(op->right);
+        switch (t) {
+            case Plus:
+                return res1 + res2;
+                break;
+            case Minus:
+                return res1 - res2;
+                break;
+            case Mult:
+                return res1 * res2;
+                break;
+            case Div:
+                return res1 / res2;
+                break;
+            case Power:
+                return mypow(res1, res2);
+                break;
+            default:
+                __builtin_trap();
+        }
+    }
+    return 0;
 }
 
 // int parse_expr_tree(Vec_Token* table, Vec_Token* v, u64 pos, u8 prec);
@@ -364,47 +403,49 @@ void print_tree(void* root) {
 // }
 
 int main(void) {
-    // static const u64 len = 256;
-    // struct pollfd fds[1] = {{0, POLLIN, 0}};
+    static const u64 len = 256;
+    struct pollfd fds[1] = {{0, POLLIN, 0}};
 
-    Literal* leaf1 = malloc(sizeof(Literal));
-    Literal* leaf2 = malloc(sizeof(Literal));
-    *leaf1 = (Literal){IntLiteral, 10};
-    *leaf2 = (Literal){IntLiteral, 3};
-    BinaryOp* tree = malloc(sizeof(BinaryOp));
-    *tree = (BinaryOp){Plus, leaf1, leaf2};
-    print_tree(tree);
-    puts("");
-    char* buffer = "10 + 4 / 3 * 5 + 4 ^ 6";
-    Lexer l = {buffer, strlen(buffer), 0};
-    Vec_Token toks = lex(&l);
-    pretty_print(&toks);
-
-    Vec_Token res = parse(&toks);
-    pretty_print(&res);
-    Iter_Token I = (Iter_Token){res.data, res.len, 0};
-    void* root = vec_to_tree(&I, 0);
-    print_tree(root);
-    puts("");
-
-    // for (;;) {
-    //     char buffer[len];
-    //     memset(buffer, 0, len);
-    //     poll(fds, 1, 50000);
+    // Literal* leaf1 = malloc(sizeof(Literal));
+    // Literal* leaf2 = malloc(sizeof(Literal));
+    // *leaf1 = (Literal){IntLiteral, 10};
+    // *leaf2 = (Literal){IntLiteral, 3};
+    // BinaryOp* tree = malloc(sizeof(BinaryOp));
+    // *tree = (BinaryOp){Plus, leaf1, leaf2};
+    // print_tree(tree);
+    // puts("");
+    // char* buffer = "10 + 4 / 3 * 5 + 4 ^ 6";
+    // Lexer l = {buffer, strlen(buffer), 0};
+    // Vec_Token toks = lex(&l);
+    // pretty_print(&toks);
     //
-    //     if (fds[0].revents & POLLIN) {
-    //         read(0, buffer, len - 1);
-    //         Lexer l = {buffer, strlen(buffer), 0};
-    //         Vec_Token toks = lex(&l);
-    //         pretty_print(&toks);
-    //
-    //         Vec_Token res = parse(&toks);
-    //         pretty_print(&res);
-    //         Iter_Token I = (Iter_Token){res.data, res.len, 0};
-    //         void* root = vec_to_tree(&I, 0);
-    //         print_tree(root);
-    //     }
-    // }
+    // Vec_Token res = parse(&toks);
+    // pretty_print(&res);
+    // Iter_Token I = (Iter_Token){res.data, res.len, 0};
+    // void* root = vec_to_tree(&I, 0);
+    // print_tree(root);
+    // puts("");
+
+    for (;;) {
+        char buffer[len];
+        memset(buffer, 0, len);
+        poll(fds, 1, 50000);
+
+        if (fds[0].revents & POLLIN) {
+            read(0, buffer, len - 1);
+            Lexer l = {buffer, strlen(buffer), 0};
+            Vec_Token toks = lex(&l);
+            pretty_print(&toks);
+
+            Vec_Token res = parse(&toks);
+            pretty_print(&res);
+            Iter_Token I = (Iter_Token){res.data, res.len, 0};
+            void* root = vec_to_tree(&I, 0);
+            print_tree(root);
+            puts("");
+            printf("result : %li\n", eval(root));
+        }
+    }
 
     return 0;
 }
