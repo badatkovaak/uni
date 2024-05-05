@@ -21,6 +21,7 @@
         }                                                                  \
         return res;                                                        \
     }                                                                      \
+                                                                           \
     Vec_##type create_with_capacity_##type(u64 capacity) {                 \
         u64 temp = closest_pow_2_##type(capacity);                         \
         void *data = malloc(temp * sizeof(type));                          \
@@ -28,6 +29,7 @@
         Vec_##type vec = {(type *)data, 0, temp};                          \
         return vec;                                                        \
     }                                                                      \
+                                                                           \
     Vec_##type create_from_array_##type(type *array, u64 len) {            \
         u64 temp = closest_pow_2_##type(len);                              \
         type *data = malloc(temp * sizeof(type));                          \
@@ -36,6 +38,7 @@
         }                                                                  \
         return (Vec_##type){data, len, temp};                              \
     }                                                                      \
+                                                                           \
     void push_##type(Vec_##type *v, type value) {                          \
         if (!v->data) {                                                    \
             v->data = (type *)malloc(8 * sizeof(type));                    \
@@ -62,6 +65,7 @@
                                                                            \
         return;                                                            \
     }                                                                      \
+                                                                           \
     int insert_##type(Vec_##type *v, type value, u64 index) {              \
         if (index > v->len) {                                              \
             return -1;                                                     \
@@ -90,6 +94,7 @@
         v->len += 1;                                                       \
         return 0;                                                          \
     }                                                                      \
+                                                                           \
     type pop_##type(Vec_##type *v) {                                       \
         if (v->len == 0) {                                                 \
             puts("Trying to pop from empty vector");                       \
@@ -102,6 +107,7 @@
         }                                                                  \
         return res;                                                        \
     }                                                                      \
+                                                                           \
     type remove_##type(Vec_##type *v, u64 index) {                         \
         if (index <= 0 || index >= v->len) {                               \
             puts("Trying to remove incorrect Index!");                     \
@@ -115,6 +121,7 @@
         v->len -= 1;                                                       \
         return res;                                                        \
     }                                                                      \
+                                                                           \
     type get_##type(Vec_##type *v, u64 index) {                            \
         if (index >= v->len) {                                             \
             puts("Incorrect Index");                                       \
@@ -122,6 +129,18 @@
         }                                                                  \
         return v->data[index];                                             \
     }                                                                      \
+                                                                           \
     void delete_vec_##type(Vec_##type *v) { free(v->data); }
+
+#ifdef VEC_TO_BOX
+
+#include "box.h"
+
+#define Vec_To_Box(type)                          \
+    Box_##type vec_to_box_##type(Vec_##type *v) { \
+        return (Box_##type){v->data, v->len};     \
+    }
+
+#endif  // VEC_TO_BOX
 
 #endif  // !VECTOR_H

@@ -1,5 +1,5 @@
 Expr := Binary_Op  | Term 
-Binary_Op := Term ('+' | '-' | '*' | '/' | '^') Term
+Binary_Op := Term ('+' | '-' | '*' | '/' | '^') Expr
 Term := '(' Expr ')' | Int
 
 Expr1 := Expr2 (('+' | '-') Expr1)?
