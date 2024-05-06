@@ -42,6 +42,19 @@ Box_chars split_at(char* str, char sep) {
     return vec_to_box_chars(&res);
 }
 
+void add_file(Node_chars* root, char* data) {
+    void* dest = malloc(sizeof(Node_chars));
+    Node_chars* n = create_leaf_chars(data);
+    add_children_chars(root, n);
+}
+
+void add_dir(Node_chars* root, char* data) {
+    void* dest = malloc(sizeof(Node_chars));
+    Node_chars* n =
+        create_node_chars(data, create_with_capacity_into_chars(0, dest));
+    add_children_chars(root, n);
+}
+
 int main(void) {
     Box_chars v = split_at("/ab/cd/ef", '/');
     for (u64 i = 0; i < v.len; i++) {
