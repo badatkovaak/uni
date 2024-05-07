@@ -23,7 +23,10 @@ typedef long i64;
 typedef float f32;
 typedef double f64;
 
-#define nullptr ((void *)0)
+typedef void* voids;
+typedef char* chars;
+
+#define nullptr ((void*)0)
 
 // Boolean types
 // typedef u8 b8;
@@ -32,4 +35,4 @@ typedef double f64;
 #define true 1
 #define false 0
 
-#endif // !DEFINES_H
+#endif  // !DEFINES_H
