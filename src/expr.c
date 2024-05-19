@@ -350,58 +350,6 @@ i64 eval(void* node) {
     return 0;
 }
 
-// int parse_expr_tree(Vec_Token* table, Vec_Token* v, u64 pos, u8 prec);
-// int parse_term_tree(Vec_Token* table, Vec_Token* input, u64 pos);
-//
-// int parse_term_tree(Vec_Token* table, Vec_Token* input, u64 pos) {
-//     Token c = input->data[pos];
-//     if (c.type == LParen) {
-//         int res = parse_expr_tree(table, input, pos + 1, 0);
-//         if (res == -1) {
-//             return -1;
-//         }
-//         if (input->data[pos + 1 + res].type == RParen) {
-//             return 2 + res;
-//         }
-//     } else if (c.type == IntLiteral) {
-//         push_Token(table, c);
-//         return 1;
-//     }
-//     return -1;
-// }
-//
-// int parse_expr_tree(Vec_Token* table, Vec_Token* input, u64 pos, u8 prec) {
-//     int res1;
-//     if (prec <= 1) {
-//         res1 = parse_expr_tree(table, input, pos, prec + 1);
-//     } else {
-//         res1 = parse_term_tree(table, input, pos);
-//     }
-//     if (res1 == -1) {
-//         return -1;
-//     }
-//     Token c = input->data[pos + res1];
-//     if (!is_binary_op(c.type)) {
-//         return res1;
-//     }
-//     if (precedence(c.type) >= prec) {
-//         int res2 = parse_expr_tree(table, input, pos + res1 + 1, prec);
-//         if (res2 == -1) {
-//             return -1;
-//         }
-//         push_Token(table, c);
-//         return res1 + res2 + 1;
-//     }
-//     return res1;
-// }
-//
-// Vec_Token parse_tree(Vec_Token* v) {
-//     Vec_Token table = create_with_capacity_Token(v->len);
-//     int res = parse_expr_tree(&table, v, 0, 0);
-//     printf("Parsed tokens : %d out of %lu\n", res, v->len);
-//     return table;
-// }
-
 int main(void) {
     static const u64 len = 256;
     struct pollfd fds[1] = {{0, POLLIN, 0}};
